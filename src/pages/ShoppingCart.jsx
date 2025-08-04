@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import DeleteIcon from "../components/DeleteIcon";
 import { Link } from "react-router-dom";
+import { toast, ToastContainer } from "react-toastify";
 
 const ShoppingCart = () => {
   const [cart, setCart] = useState([]);
@@ -15,6 +16,8 @@ const ShoppingCart = () => {
     const updated = cart.filter((item) => item.id !== id);
     setCart(updated);
     localStorage.setItem("cartItems", JSON.stringify(updated));
+    const event = new Event("cartUpdated");
+    window.dispatchEvent(event);
   };
 
   const totalPrice = cart.reduce(
@@ -58,6 +61,11 @@ const ShoppingCart = () => {
   };
 
   const handleCheckout = () => {
+    if (cart.length === 0) {
+      toast.error("Your cart is empty!");
+      return;
+    }
+
     const products = JSON.parse(localStorage.getItem("products")) || [];
 
     const updatedProducts = products.map((product) => {
@@ -76,7 +84,10 @@ const ShoppingCart = () => {
     localStorage.removeItem("cartItems");
     setCart([]);
 
-    alert("Checkout successful!");
+    toast.success("Checkout successful! Thank you for your purchase.");
+
+    const event = new Event("cartUpdated");
+    window.dispatchEvent(event);
   };
 
   return (
@@ -98,7 +109,7 @@ const ShoppingCart = () => {
           >
             <div className="col-span-6 flex items-center gap-4">
               <img
-                src={item.image}
+                src={item.images[0]}
                 alt={item.title}
                 className="w-12 h-12 object-cover rounded-full"
               />

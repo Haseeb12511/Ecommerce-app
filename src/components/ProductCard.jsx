@@ -1,6 +1,15 @@
 import React from "react";
+import { Link } from "react-router-dom";
 
-const ProductCard = ({ image, title, price, rating, id, products }) => {
+const ProductCard = ({
+  images,
+  title,
+  price,
+  rating,
+  id,
+  description,
+  products,
+}) => {
   const stars = Array(5)
     .fill(0)
     .map((_, i) => (
@@ -12,51 +21,54 @@ const ProductCard = ({ image, title, price, rating, id, products }) => {
       </span>
     ));
 
-  // const handleAddTimes = () => {
-  //   const productData = { id, title, price, rating };
-  //   let saved = JSON.parse(localStorage.getItem("savedProducts")) || [];
-
-  //   // Prevent duplicates
-  //   const alreadyExists = saved.some((item) => item.id === id);
-  //   if (!alreadyExists) {
-  //     saved.push(productData);
-  //     localStorage.setItem("savedProducts", JSON.stringify(saved));
-  //     alert("Product saved!");
-  //   } else {
-  //     alert("Product already saved.");
-  //   }
-  // };
-
-  const handleAddToCart = ({ products }) => {
+  const handleAddToCart = () => {
     const cartItems = JSON.parse(localStorage.getItem("cartItems")) || [];
+    const products = JSON.parse(localStorage.getItem("products")) || [];
     const productExists = cartItems.find((item) => item.id === id);
 
     if (productExists) {
       productExists.quantity += 1;
     } else {
-      const productToAdd = products.find((product) => product.id === id);
-      cartItems.push({ ...productToAdd, quantity: 1 });
+      const product = products.find((product) => product.id === id);
+      const productData = {
+        id: product.id,
+        title: product.title,
+        price: product.price,
+        images: product.images,
+        quantity: 1,
+      };
+      cartItems.push(productData);
     }
 
     localStorage.setItem("cartItems", JSON.stringify(cartItems));
+
+    const event = new Event("cartUpdated");
+    window.dispatchEvent(event);
+  };
+
+  const handleClick = () => {
+    window.location.href = `/product/${id}`;
   };
 
   return (
-    <div className="bg-white w-56 p-5 rounded-2xl shadow-md text-center m-3">
+    <div
+      className="bg-white w-56 p-5 rounded-2xl shadow-md text-center m-3"
+      onClick={handleClick}
+    >
       <img
-        src={image}
+        src={images[0]}
         alt={title}
         className="w-24 h-24 mx-auto object-contain mb-3"
       />
       <h3 className="text-lg font-semibold">{title}</h3>
-      <p className="text-sm text-gray-500">
-        Lorem ipsum dolor sit amet, consectetur.
-      </p>
+      <p className="text-sm text-gray-500">{description}</p>
       <h3 className="text-lg font-bold text-gray-700 mt-2">${price}</h3>
       <div className="my-2">{stars}</div>
       <button
         className="text-white px-4 py-2 rounded-lg w-full bg-[#0ea5e9] hover:bg-[#2e77ff]"
-        onClick={() => handleAddToCart({ products })}
+        onClick={(e) => {
+          handleAddToCart({ products });
+        }}
       >
         Add to Cart
       </button>
@@ -65,5 +77,3 @@ const ProductCard = ({ image, title, price, rating, id, products }) => {
 };
 
 export default ProductCard;
-
-//The data of the card for which you click the Add Times button will be saved in local storage.
